@@ -1,6 +1,8 @@
 import React, { ReactNode } from 'react';
 import { graphql } from 'gatsby';
 
+import parse from 'html-react-parser';
+
 export const query = graphql`
 query($id: String) {
     wpPost(id: { eq: $id }) {
@@ -44,9 +46,10 @@ type PropType = {
 
 class Post extends React.Component<PropType> {
     render(): ReactNode {
+        console.log(this.props);
         return (
             <div>
-                <h1>Hello World</h1>
+                {parse(this.props.data.wpPost.content)}
             </div>
         );
     }
