@@ -5,12 +5,6 @@ module.exports = {
         name: 'Professional Portfolio Site',
         tagline: 'Articles, tools and showcase',
     },
-    siteMetadata: {
-        title: 'smithsoftby',
-        author: 'Sarah Smith',
-        name: 'Basic Gatsby Typescript Blog',
-        tagline: 'Gatsby + SASS + Typescript',
-    },
     plugins: [
         'gatsby-plugin-typescript',
         {

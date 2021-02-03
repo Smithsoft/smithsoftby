@@ -4,6 +4,7 @@ import React from 'react';
 import { Link, graphql, StaticQuery } from 'gatsby';
 
 import headerStyles from './header.module.scss';
+import { Button, Form, FormControl, Nav, Navbar } from 'react-bootstrap';
 
 type MenuId = {
     id: string
@@ -32,42 +33,33 @@ type PropType = {
 }
 
 const findSiteHeaderLink = (data: MenuItem[]): MenuItem => {
-    console.log(data)
     return data.find(menuItem => menuItem.node.path === '/' )
 }
 
 const generateLinks = (data: MenuItem[]): React.ReactElement[] => {
     const result = data.map((menuItem):React.ReactElement => {
-        return (<li key={menuItem.node.id}>
-            <Link
-                className={headerStyles.navItem}
-                activeClassName={headerStyles.activeNavItem}
-                to={menuItem.node.path}
-            >
-                {menuItem.node.label}
-            </Link>
-        </li>);
+        return (
+            <Nav.Link key={menuItem.node.id} href={menuItem.node.path}>{menuItem.node.label}</Nav.Link>
+        );
     });
     return result;
 }
 
 const Header = (props: PropType): React.ReactElement => {
-    console.log(props);
     const siteHeader = findSiteHeaderLink(props.data.allWpMenuItem.edges);
     const links = generateLinks(props.data.allWpMenuItem.edges);
     return (
-        <header>
-            <h1>
-                <Link className={headerStyles.title} to="/">
-                    {siteHeader.node.title}
-                </Link>
-            </h1>
-            <nav>
-                <ul className={headerStyles.navList}>
-                    {links}
-                </ul>
-            </nav>
-        </header>
+        <Navbar bg="light" expand="lg">
+            <Navbar.Brand href="/">{siteHeader.node.title}</Navbar.Brand>
+            <Navbar.Toggle aria-controls="basic-navbar-nav" />
+            <Navbar.Collapse id="basic-navbar-nav">
+                <Nav className="mr-auto">{links}</Nav>
+                <Form inline>
+                    <FormControl type="text" placeholder="Search" className="mr-sm-2" />
+                    <Button variant="outline-success">Search</Button>
+                </Form>
+            </Navbar.Collapse>
+        </Navbar>
     );
 };
 

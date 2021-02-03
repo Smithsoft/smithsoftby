@@ -18,6 +18,8 @@ exports.createPages = async ({ graphql, actions }) => {
                     node {
                         id
                         slug
+                        content
+                        title
                     }
                 }
             }
@@ -26,6 +28,8 @@ exports.createPages = async ({ graphql, actions }) => {
                     node {
                         id
                         slug
+                        content
+                        title
                     }
                 }
             }
@@ -38,7 +42,6 @@ exports.createPages = async ({ graphql, actions }) => {
     const allPosts = result.data.allPosts.edges;
     const otherPagesList = result.data.otherPages.edges;
 
-    console.log("Creating front page: " + result.data.frontPage.title);
     createPage({
         path: '/',
         component: slash(pageTemplate),
@@ -60,12 +63,16 @@ exports.createPages = async ({ graphql, actions }) => {
         });
     });
     otherPagesList.forEach((page) => {
-        createPage({
-            path: page.node.slug,
-            component: slash(pageTemplate),
-            context: {
-                id: page.node.id
-            }
-        });
+        if (page.node.title && page.node.content) {
+            createPage({
+                path: page.node.slug,
+                component: slash(pageTemplate),
+                context: {
+                    id: page.node.id
+                }
+            });
+        } else {
+            console.log("Not creating a page " + page.node.id + ": empty title/content")
+        }
     });
 };

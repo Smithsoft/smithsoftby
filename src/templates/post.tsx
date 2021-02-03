@@ -46,7 +46,6 @@ type PropType = {
 
 class Post extends React.Component<PropType> {
     render(): ReactNode {
-        console.log(this.props);
         return (
             <div>
                 {parse(this.props.data.wpPost.content)}
