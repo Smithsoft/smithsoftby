@@ -2,6 +2,10 @@
 
 A Gatsby transform from WordPress React-app.
 
+## Deploy
+
+[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/Smithsoft/GatsbyTypescript)
+
 ## Html-React-Parser
 
 For now this project is using [HTML React Parser](https://github.com/remarkablemark/html-react-parser).  There's a similarly named project [React HTML Parser](https://github.com/wrakky/react-html-parser) that does the same thing.

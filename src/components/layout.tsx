@@ -5,7 +5,9 @@ import Footer from './footer';
 import MenuHeader from './header';
 
 import '../styles/index.scss';
-import { Container } from 'react-bootstrap';
+import layoutStyles from './layout.module.scss';
+
+import { Container, Row } from 'react-bootstrap';
 
 /**
  *   Semantic element layout to work w assistice technologies
@@ -30,8 +32,10 @@ import { Container } from 'react-bootstrap';
 const Layout = (props: { children: React.ReactNode }): React.ReactElement => {
     return (
         <Container>
-            <MenuHeader />
-                {props.children}
+            <Row>
+                <MenuHeader />
+            </Row>
+            {props.children}
             <Footer />
         </Container>
     );

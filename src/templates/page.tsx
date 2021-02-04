@@ -1,11 +1,15 @@
 import React, { ReactNode } from 'react';
 import { graphql } from 'gatsby';
 
-import parse, { attributesToProps, DOMNode, domToReact, HTMLReactParserOptions } from 'html-react-parser';
+import SVG from 'react-inlinesvg';
+
+import parse, { domToReact, HTMLReactParserOptions } from 'html-react-parser';
 import { Element } from "domhandler/lib/node";
 import Layout from '../components/layout';
 import Head from '../components/head';
-import { Row, Col, ButtonGroup, Button } from 'react-bootstrap';
+import { Row, Col, ButtonGroup, Button, Container } from 'react-bootstrap';
+
+import pageStyles from './page.module.scss';
 
 export const query = graphql`
 query($id: String!) {
@@ -17,6 +21,9 @@ query($id: String!) {
         title
         featuredImage {
             node {
+                altText
+                caption
+                description
                 localFile {
                     publicURL
                 }
@@ -27,11 +34,16 @@ query($id: String!) {
 `;
 
 type LocalFile = {
-    publicURL: string
+    localFile: {
+        publicURL: string
+    }
 }
 
-type FeaturedImageType = {
+type FeaturedImageNode = {
     node: LocalFile
+    description: string
+    caption: string
+    altText: string
 }
 
 type PageType = {
@@ -40,7 +52,7 @@ type PageType = {
     content: string
     date: string
     title: string
-    featuredImage: FeaturedImageType
+    featuredImage: FeaturedImageNode
 }
 
 type PropType = {
@@ -92,11 +104,67 @@ const options: HTMLReactParserOptions = {
 };
   
 
-class Post extends React.Component<PropType> {
+const PreProcess = (code: string): string => {
+    const cleanString = code.replace(/width="[0-9.]+"/g, '');
+    return cleanString.replace(/height="[0-9.]+"/g, '');
+};
+
+type StateType = {
+    loadingMessage: string
+    heroImageSVG: any | null
+}
+
+class Post extends React.Component<PropType, StateType> {
+
+    constructor(props: PropType) {
+        super(props);
+        this.state = { 
+            heroImageSVG: null, loadingMessage: "Loading..." };
+    }
+
+    componentDidMount(): void {
+        const media = this.props.data.wpPage.featuredImage.node;
+        const svgUrl = media.localFile.publicURL;
+        if (!svgUrl.startsWith('/static/')) {
+            throw new Error('SVG URL is unexpected: ' + svgUrl);
+        }
+        const staticPath = svgUrl.replace(/^(\/static\/)/, '');
+
+        // webpack needs the dynamic version of import to specify that the path
+        // is on the local relative part of the file system, and making the first
+        // part of the path non-dynamic does this.
+        // const { default: WomanWithPhoneImage } = await import(
+        //     /* webpackInclude: /\.svg$/ */
+        //     '../../public/static/' + staticPath
+        // );
+        // this.setState({ heroImageSVG: WomanWithPhoneImage });
+
+        import(
+            /* webpackInclude: /\.svg$/ */
+            '../../public/static/' + staticPath
+        ).then(({ default: PageHeroImage }) => {
+            this.setState({ heroImageSVG: PageHeroImage, loadingMessage: "Done" });
+        }, (reason: any) => {
+            this.setState({ heroImageSVG: null, loadingMessage: `Failed: ${reason}` })
+        });
+    }
     render(): ReactNode {
+        let heroImage = <p>{this.state.loadingMessage}</p>;
+        if (this.state.heroImageSVG !== null) {
+            heroImage = (
+                <Container fluid>
+                    <SVG
+                        preProcessor={PreProcess}
+                        src={this.state.heroImageSVG}
+                        title={this.props.data.wpPage.featuredImage.caption}
+                    ></SVG>
+                </Container>
+            );
+        }
         return (
             <Layout>
                 <Head title={this.props.data.wpPage.title} />
+                {heroImage}
                 <div>
                     {parse(this.props.data.wpPage.content, options)}
                 </div>
