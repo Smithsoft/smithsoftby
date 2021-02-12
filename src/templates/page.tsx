@@ -2,6 +2,7 @@ import React, { ReactNode } from 'react';
 import { graphql } from 'gatsby';
 
 import SVG from 'react-inlinesvg';
+import Img from 'gatsby-image';
 
 import parse, { domToReact, HTMLReactParserOptions } from 'html-react-parser';
 import { Element } from "domhandler/lib/node";
@@ -26,6 +27,11 @@ query($id: String!) {
                 description
                 localFile {
                     publicURL
+                    childImageSharp {
+                        fluid(maxWidth: 800) {
+                          ...GatsbyImageSharpFluid
+                        }
+                    }
                 }
             }
         }
@@ -36,6 +42,7 @@ query($id: String!) {
 type LocalFile = {
     localFile: {
         publicURL: string
+        childImageSharp: any
     }
 }
 
@@ -62,8 +69,6 @@ type PropType = {
 }
 
 const createButton = (domNode: Element): JSX.Element => {
-    console.log(domNode)
-    console.log(domNode.children)
     const linkEl: Element | null = domNode.children.find(el => el.type === 'tag' && el.name === 'a')
     const linkHref = linkEl?.attribs?.rel ?? linkEl.attribs?.href ?? "#"
     const linkContent = domToReact(linkEl.children)
@@ -75,22 +80,15 @@ const createButton = (domNode: Element): JSX.Element => {
 type ReplaceResult = JSX.Element | object | void | undefined | null | false
 
 const transformer = (domNode:Element):ReplaceResult => {
-    // if (domNode.type === 'text') {
-    //     console.log(`    \"${domNode.children}\"`)
-    // } else {
-    //     console.log("Node: " + domNode.type + " " + domNode.name)
-    // }
     if (domNode.type === 'tag') {
         if (domNode.name === 'div') {
-            console.log("Attrs for div:")
-            console.log(domNode.attribs)
             const className = domNode.attribs.class
             if (className === 'wp-block-columns' ) {
                 return (<Row>{domToReact(domNode.children, { replace: transformer })}</Row>)
             } else if (className === 'wp-block-column' ) {
                 return (<Col>{domToReact(domNode.children, { replace: transformer })}</Col>)
             } else if (className === 'wp-block-buttons') {
-                return (<ButtonGroup>{domToReact(domNode.children, { replace: transformer })}</ButtonGroup>)
+                return (<ButtonGroup size='lg' className={pageStyles.btnContainer}>{domToReact(domNode.children, { replace: transformer })}</ButtonGroup>)
             } else if (className === 'wp-block-button') {
                 return createButton(domNode)
             }
@@ -103,15 +101,29 @@ const options: HTMLReactParserOptions = {
     trim: true
 };
   
-
+/**
+ * Pre-process the SVG to remove any 'width' or 'height' attributes
+ * on the main SVG tag. This is necessary for the SVG to appear centered
+ * and to resize with the fluid div that it is framed by.
+ * @param code 
+ */
 const PreProcess = (code: string): string => {
-    const cleanString = code.replace(/width="[0-9.]+"/g, '');
-    return cleanString.replace(/height="[0-9.]+"/g, '');
+    const SVGTagRegex = /<\s*svg[^>]*>/ ;
+    const openSVGTag = code.match(SVGTagRegex);
+    if (openSVGTag && openSVGTag.length > 0) {
+        var openSVGTagStr = openSVGTag[0];
+        code = code.substr(openSVGTagStr.length);
+        openSVGTagStr = openSVGTagStr.replace(/width="[0-9]+"/g, '');
+        openSVGTagStr = openSVGTagStr.replace(/height="[0-9]+"/g, '');
+        code = openSVGTagStr + code;
+    }
+    return code;
 };
 
 type StateType = {
-    loadingMessage: string
     heroImageSVG: any | null
+    heroImageSharp: any | null
+    loadingMessage: string
 }
 
 class Post extends React.Component<PropType, StateType> {
@@ -119,40 +131,46 @@ class Post extends React.Component<PropType, StateType> {
     constructor(props: PropType) {
         super(props);
         this.state = { 
-            heroImageSVG: null, loadingMessage: "Loading..." };
+            heroImageSVG: null, 
+            heroImageSharp: null,
+            loadingMessage: "Loading..." };
     }
 
     componentDidMount(): void {
         const media = this.props.data.wpPage.featuredImage.node;
-        const svgUrl = media.localFile.publicURL;
-        if (!svgUrl.startsWith('/static/')) {
-            throw new Error('SVG URL is unexpected: ' + svgUrl);
+        const imgUrl = media.localFile.publicURL;
+        if (!imgUrl.startsWith('/static/')) {
+            throw new Error('SVG URL is unexpected: ' + imgUrl);
         }
-        const staticPath = svgUrl.replace(/^(\/static\/)/, '');
+        const staticPath = imgUrl.replace(/^(\/static\/)/, '');
 
-        // webpack needs the dynamic version of import to specify that the path
-        // is on the local relative part of the file system, and making the first
-        // part of the path non-dynamic does this.
-        // const { default: WomanWithPhoneImage } = await import(
-        //     /* webpackInclude: /\.svg$/ */
-        //     '../../public/static/' + staticPath
-        // );
-        // this.setState({ heroImageSVG: WomanWithPhoneImage });
+        if (imgUrl.endsWith("SVG") || imgUrl.endsWith("svg")) {
+            // webpack needs the dynamic version of import to specify that the path
+            // is on the local relative part of the file system, and making the first
+            // part of the path non-dynamic does this.
+            // const { default: WomanWithPhoneImage } = await import(
+            //     /* webpackInclude: /\.svg$/ */
+            //     '../../public/static/' + staticPath
+            // );
+            // this.setState({ heroImageSVG: WomanWithPhoneImage });
 
-        import(
-            /* webpackInclude: /\.svg$/ */
-            '../../public/static/' + staticPath
-        ).then(({ default: PageHeroImage }) => {
-            this.setState({ heroImageSVG: PageHeroImage, loadingMessage: "Done" });
-        }, (reason: any) => {
-            this.setState({ heroImageSVG: null, loadingMessage: `Failed: ${reason}` })
-        });
+            import(
+                /* webpackInclude: /\.svg$/ */
+                '../../public/static/' + staticPath
+            ).then(({ default: PageHeroImage }) => {
+                this.setState({ heroImageSVG: PageHeroImage, loadingMessage: "Done" });
+            }, (reason: any) => {
+                this.setState({ heroImageSVG: null, loadingMessage: `Failed: ${reason}` })
+            });
+        } else {
+            this.setState({ heroImageSharp: media.localFile.childImageSharp })
+        }
     }
     render(): ReactNode {
         let heroImage = <p>{this.state.loadingMessage}</p>;
         if (this.state.heroImageSVG !== null) {
             heroImage = (
-                <Container fluid>
+                <Container className={pageStyles.svgContainer} fluid>
                     <SVG
                         preProcessor={PreProcess}
                         src={this.state.heroImageSVG}
@@ -160,14 +178,16 @@ class Post extends React.Component<PropType, StateType> {
                     ></SVG>
                 </Container>
             );
+        } else if (this.state.heroImageSharp !== null) {
+            heroImage = (
+                <Img fluid={this.state.heroImageSharp} title={this.props.data.wpPage.featuredImage.caption} />
+            );
         }
         return (
             <Layout>
                 <Head title={this.props.data.wpPage.title} />
                 {heroImage}
-                <div>
-                    {parse(this.props.data.wpPage.content, options)}
-                </div>
+                {parse(this.props.data.wpPage.content, options)}
             </Layout>
         );
     }

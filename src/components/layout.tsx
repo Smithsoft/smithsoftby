@@ -10,13 +10,17 @@ import layoutStyles from './layout.module.scss';
 import { Container, Row } from 'react-bootstrap';
 
 /**
+ * Layout is the top level element in all pages.
+ * 
  *   Semantic element layout to work w assistice technologies
  * <header>
  *      <h1>Site name</h1><!-- brand here -->
  *      <nav></nav>
- *      <div><img>Hero image</img></div>
  * </header>
  * <main>
+ *      <div>
+ *          <img>Hero image</img>
+ *      </div>
  *      <section>
  *      </section>
  *      <section>
@@ -32,10 +36,12 @@ import { Container, Row } from 'react-bootstrap';
 const Layout = (props: { children: React.ReactNode }): React.ReactElement => {
     return (
         <Container>
-            <Row>
+            <header>
                 <MenuHeader />
-            </Row>
-            {props.children}
+            </header>
+            <main>
+                {props.children}
+            </main>
             <Footer />
         </Container>
     );
