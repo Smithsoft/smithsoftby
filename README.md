@@ -4,7 +4,8 @@ A Gatsby transform from WordPress React-app.
 
 ## Deploy
 
-[![Deploy to Netlify](https://www.netlify.com/img/deploy/button.svg)](https://app.netlify.com/start/deploy?repository=https://github.com/Smithsoft/GatsbyTypescript)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/199337a3-0930-4b9f-8d67-043d33643661/deploy-status)](https://app.netlify.com/sites/vigilant-euler-79203e/deploys)
+
 
 ## Html-React-Parser
 
