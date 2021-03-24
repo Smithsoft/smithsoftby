@@ -8,7 +8,7 @@ module.exports = {
     plugins: [
         'gatsby-plugin-typescript',
         {
-            resolve: 'gatsby-source-wordpress-experimental',
+            resolve: 'gatsby-source-wordpress',
             options: {
                 url: 'http://dev.smithsoft.com.au/graphql',
             },

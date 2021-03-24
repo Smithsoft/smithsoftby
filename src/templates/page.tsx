@@ -10,7 +10,7 @@ import Layout from '../components/layout';
 import Head from '../components/head';
 import { Row, Col, ButtonGroup, Button, Container } from 'react-bootstrap';
 
-import pageStyles from './page.module.scss';
+import * as pageStyles from './page.module.scss';
 
 export const query = graphql`
 query($id: String!) {

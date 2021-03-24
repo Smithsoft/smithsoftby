@@ -1,7 +1,7 @@
 import React from 'react';
 import { graphql, useStaticQuery } from 'gatsby';
 
-import footerStyles from './footer.module.scss';
+import * as footerStyles from './footer.module.scss';
 
 const Footer = (): React.ReactElement => {
     const data = useStaticQuery(graphql`

@@ -5,7 +5,7 @@ import Footer from './footer';
 import MenuHeader from './header';
 
 import '../styles/index.scss';
-import layoutStyles from './layout.module.scss';
+import * as layoutStyles from './layout.module.scss';
 
 import { Container, Row } from 'react-bootstrap';
 

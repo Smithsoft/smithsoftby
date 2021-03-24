@@ -3,7 +3,7 @@ import React from 'react';
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import { Link, graphql, StaticQuery } from 'gatsby';
 
-import headerStyles from './header.module.scss';
+import * as headerStyles from './header.module.scss';
 import { Col, Navbar } from 'react-bootstrap';
 
 type MenuId = {
