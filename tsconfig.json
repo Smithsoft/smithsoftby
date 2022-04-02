@@ -17,6 +17,6 @@
       ],
       "target": "ES2018"
     },
-    "include": ["src/**/*.ts", "src/**/*.tsx"],
+    "include": ["src/**/*.ts", "src/**/*.tsx", "src/utils/algolia-queries.js"],
     "exclude": ["node_modules/*", "public/*"]
   }

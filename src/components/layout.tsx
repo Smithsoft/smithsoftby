@@ -5,9 +5,6 @@ import Footer from './footer';
 import MenuHeader from './header';
 
 import '../styles/index.scss';
-import * as layoutStyles from './layout.module.scss';
-
-import { Container, Row } from 'react-bootstrap';
 
 /**
  * Layout is the top level element in all pages.
@@ -35,7 +32,7 @@ import { Container, Row } from 'react-bootstrap';
  * */ 
 const Layout = (props: { children: React.ReactNode }): React.ReactElement => {
     return (
-        <Container>
+        <div className='container'>
             <header>
                 <MenuHeader />
             </header>
@@ -43,7 +40,7 @@ const Layout = (props: { children: React.ReactNode }): React.ReactElement => {
                 {props.children}
             </main>
             <Footer />
-        </Container>
+        </div>
     );
 };
 

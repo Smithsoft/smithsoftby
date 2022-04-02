@@ -4,13 +4,13 @@ import { graphql } from 'gatsby';
 import SVG from 'react-inlinesvg';
 import Img from 'gatsby-image';
 
-import parse, { domToReact, HTMLReactParserOptions } from 'html-react-parser';
+import parse, { DOMNode, domToReact, HTMLReactParserOptions } from 'html-react-parser';
 import { Element } from "domhandler/lib/node";
 import Layout from '../components/layout';
 import Head from '../components/head';
-import { Row, Col, ButtonGroup, Button, Container } from 'react-bootstrap';
 
 import * as pageStyles from './page.module.scss';
+import ButtonGt from '../components/button-gt';
 
 export const query = graphql`
 query($id: String!) {
@@ -68,29 +68,26 @@ type PropType = {
     }
 }
 
-const createButton = (domNode: Element): JSX.Element => {
-    const linkEl: Element | null = domNode.children.find(el => el.type === 'tag' && el.name === 'a')
-    const linkHref = linkEl?.attribs?.rel ?? linkEl.attribs?.href ?? "#"
-    const linkContent = domToReact(linkEl.children)
-    return (
-        <Button href={linkHref}>{linkContent}</Button>
-        )
-}
+type ReplaceResult = JSX.Element | object | void | false
 
-type ReplaceResult = JSX.Element | object | void | undefined | null | false
-
-const transformer = (domNode:Element):ReplaceResult => {
-    if (domNode.type === 'tag') {
-        if (domNode.name === 'div') {
-            const className = domNode.attribs.class
-            if (className === 'wp-block-columns' ) {
-                return (<Row>{domToReact(domNode.children, { replace: transformer })}</Row>)
-            } else if (className === 'wp-block-column' ) {
-                return (<Col>{domToReact(domNode.children, { replace: transformer })}</Col>)
-            } else if (className === 'wp-block-buttons') {
-                return (<ButtonGroup size='lg' className={pageStyles.btnContainer}>{domToReact(domNode.children, { replace: transformer })}</ButtonGroup>)
-            } else if (className === 'wp-block-button') {
-                return createButton(domNode)
+const transformer = (domNode: DOMNode): ReplaceResult => {
+    //console.log(JSON.stringify(domNode, ['name', 'attribs', 'type', 'children']))
+    if (domNode instanceof Element) {
+        if (domNode.type === 'tag') {
+            if (domNode.name === 'div') {
+                const inner = domToReact(domNode.children, { replace: transformer })
+                const srcClassName = domNode.attribs.class
+                console.log("Got class: " + srcClassName)
+                if (srcClassName.includes('wp-block-columns') ) {
+                    return (<div className='row'>{inner}</div>)
+                } else if (srcClassName.includes('wp-block-column')) {
+                    return (<div className='col-sm'>{inner}</div>)
+                } else if (srcClassName.includes('wp-block-buttons')) {
+                    return (<div className={`btn-group ${pageStyles.btnContainer}`} role="group" aria-label="Button group">
+                            {inner}</div>)
+                } else if (srcClassName.includes('wp-block-button')) {
+                    return (<ButtonGt gutenbergElement={domNode}></ButtonGt>)
+                }
             }
         }
     }
@@ -170,13 +167,13 @@ class Post extends React.Component<PropType, StateType> {
         let heroImage = <p>{this.state.loadingMessage}</p>;
         if (this.state.heroImageSVG !== null) {
             heroImage = (
-                <Container className={pageStyles.svgContainer} fluid>
+                <div className={`container-fluid ${pageStyles.svgContainer}`}>
                     <SVG
                         preProcessor={PreProcess}
                         src={this.state.heroImageSVG}
                         title={this.props.data.wpPage.featuredImage.caption}
                     ></SVG>
-                </Container>
+                </div>
             );
         } else if (this.state.heroImageSharp !== null) {
             heroImage = (

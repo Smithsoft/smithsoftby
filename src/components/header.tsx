@@ -4,7 +4,6 @@ import React from 'react';
 import { Link, graphql, StaticQuery } from 'gatsby';
 
 import * as headerStyles from './header.module.scss';
-import { Col, Navbar } from 'react-bootstrap';
 
 type MenuId = {
     id: string
@@ -54,20 +53,27 @@ const generateLinks = (data: MenuItem[]): React.ReactElement[] => {
 }
 
 const Header = (props: PropType): React.ReactElement => {
-    console.log(props)
     const siteHeader = props.data.settings.generalSettings;
     const links = generateLinks(props.data.menus.edges);
     return (
-        <Navbar className="header" expand="md" bg="light">
-            <Col>
-                <Navbar.Brand href="/" title={siteHeader.description}>{siteHeader.title}</Navbar.Brand>
-                <Navbar.Text className={headerStyles.siteTitle}>{siteHeader.description}</Navbar.Text>
-            </Col>
-            <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            <Navbar.Collapse className="justify-content-end">
+        <nav className="header navbar navbar-expand-md navbar-light bg-light">
+            <div>
+                <a className="navbar-brand" href="/" title={siteHeader.description}>{siteHeader.title}</a>
+            </div>
+            <button className="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span className="navbar-toggler-icon"></span>
+            </button>
+            <div className="collapse navbar-collapse" id="navbarSupportedContent">
                 {links}
-            </Navbar.Collapse>
-        </Navbar>
+            </div>
+            <div>
+            <form className="form-inline">
+                <input className="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search"></input>
+                <button className="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
+            </form>
+            <span className={headerStyles.siteTitle}><small>{siteHeader.description}</small></span>
+            </div>
+        </nav>
     );
 };
 
