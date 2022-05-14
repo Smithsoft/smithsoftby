@@ -1,9 +1,9 @@
-$call-to-action-background: #f9a826ff;
-$call-to-action-text: #ffffffff;
+$cta-bkgnd: #f9a826ff;
+$cta-text: #ffffffff;
 $default-padding: 1rem;
 
 :export {
-    callToActionText: $call-to-action-text;
-    callToActionBackground: $call-to-action-background;
+    callToActionText: $cta-text;
+    callToActionBackground: $cta-bkgnd;
     defaultPadding: $default-padding;
 }

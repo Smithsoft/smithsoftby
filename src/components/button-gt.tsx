@@ -30,22 +30,15 @@ import parse from 'style-to-object'
  * 
  */
 
-type ButtonTreatment = 'outline' | 'filled'
-
 type PropType = {
     gutenbergElement: Element
 }
 
-import * as pageStyles from './button-gt.module.scss'
 import { domToReact } from 'html-react-parser'
 
 class ButtonGt extends React.Component<PropType> {
 
     anchorRef = React.createRef<HTMLButtonElement>()
-    // targetLink: string
-    // linkStyle: { [name: string]: string }
-    // buttonTreatment: ButtonTreatment
-    // anchorText: string
 
     linkEl = this.props.gutenbergElement.firstChild as Element
     blockEl = this.props.gutenbergElement as Element
@@ -55,47 +48,25 @@ class ButtonGt extends React.Component<PropType> {
     linkStyle = parse(this.linkStyleText)
     blockClasses = this.blockEl.attribs['class'].split(/\s+/)
     linkClasses = this.linkEl.attribs['class'].split(/\s+/)
-    buttonTreatment = this.blockClasses.includes('is-style-outline') ? 'outline' : 'filled'
+    buttonTreatment = this.blockClasses.includes('is-style-outline') ? 'outline-' : ''
+    buttonTheme = this.blockClasses.includes('call-to-action') ? 'cta' : 'primary'
+    buttonSize = this.blockClasses.includes('has-large-font-size') ? ' btn-lg' : ''
 
     constructor(props: PropType) {
         super(props)
-        console.log(this.props.gutenbergElement)
-    }
-
-    componentDidMount() {
-    //    this.anchorRef.current.setAttribute('style', this.linkStyle);
-    }
-    
-    componentDidUpdate() {
-    //    this.anchorRef.current.setAttribute('style', this.linkStyle);
     }
     
     render(): ReactNode {
-        console.log('#####')
-        console.log(this.linkStyle)
-        console.log(this.linkStyleText)
-        console.log('#####')
-        if (this.linkStyleText) {
-            this.linkStyle = {
-                ...this.linkStyle,
-
-            }
-        }
-        const classes = [pageStyles.buttongt, pageStyles.buttongtOutline].join(' ')
+        this.buttonTreatment === 'outline' ? 'outline-' : ''
+        const bootstrap_classes = `btn btn${this.buttonTreatment}-${this.buttonTheme}${this.buttonSize}`
         return (
-
-            <a style={this.linkStyle} href={this.targetLink} className={classes} >{domToReact(this.linkEl.children)}</a>
+            <>
+                <a 
+                    className={bootstrap_classes} 
+                    href={this.targetLink} 
+                >{domToReact(this.linkEl.children)}</a>
+            </>
         )
-        // return (
-        //     <>
-        //         <Button 
-        //             style={this.linkStyle}
-        //             variant={this.buttonTreatment === 'outline' ? 'outline-primary' : 'primary'} 
-        //             href={this.targetLink} 
-        //             ref={this.anchorRef} 
-        //         >{domToReact(this.linkEl.children)}</Button>
-        //     </>
-        // )
     }
 }
 

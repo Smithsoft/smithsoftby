@@ -11,7 +11,7 @@ module.exports = {
         {
             resolve: 'gatsby-source-wordpress',
             options: {
-                url: 'http://dev.smithsoft.com.au/graphql',
+                url: 'http://localhost:8000/graphql',
                 schema: {
                     perPage: 20, // currently set to 100
                     requestConcurrency: 5, // currently set to 15

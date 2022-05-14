@@ -1,2 +1,18 @@
 /* Reset provided by https://github.com/gatsbyjs/gatsby-starter-blog via MIT license */
+@import "./variables.scss";
+
 @import "~bootstrap/scss/bootstrap";
+
+//  https://stackoverflow.com/questions/28261287/how-to-change-btn-color-in-bootstrap
+.btn-cta {
+    @include button-variant($cta-bkgnd, darken($cta-bkgnd, 7.5%), darken($cta-bkgnd, 10%), lighten($cta-bkgnd,5%), lighten($cta-bkgnd, 10%), darken($cta-bkgnd,30%));
+    color: darken($cta-text, 7.5%);
+}
+
+.btn-cta:hover {
+    color: $cta-text;
+}
+
+.btn-cta:active {
+    color: $cta-text
+}
