@@ -96,6 +96,26 @@ gcloud compute instances stop wordpress-graphql
 gcloud compute ssh wordpress-graphql
 ```
 
+## Deploy to Netlify
+
+Ensure Netlify command line tool is installed:
+
+```
+npm install netlify-cli -g
+```
+
+Log in to Netlify:
+
+```
+netlify login
+```
+
+Deploy to Netlify:
+
+```
+netlify deploy
+```
+
 ### Admin of Wordpress Instance
 
 * See [Wordpress admin readme](wordpress-admin.md)

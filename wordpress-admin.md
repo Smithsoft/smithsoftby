@@ -68,7 +68,7 @@ so after logging in to the instance with the newly created password Wordpress wi
 
 ```sh
 # Backup the MySQL instance
-gcloud compute ssh wordpress-graphql --command "mysqldump -u root -p smithsof_634 | gzip -9" > ~/Dropbox/website_backup/backup-2021-11-06.sql.gz
+gcloud compute ssh wordpress-graphql --command "mysqldump -u root -p smithsof_wp634 | gzip -9" > ~/Dropbox/website_backup/backup-2021-11-06.sql.gz
 ```
 
 ```sh

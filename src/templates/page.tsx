@@ -77,7 +77,6 @@ const transformer = (domNode: DOMNode): ReplaceResult => {
             if (domNode.name === 'div') {
                 const inner = domToReact(domNode.children, { replace: transformer })
                 const srcClassName = domNode.attribs.class
-                console.log("Got class: " + srcClassName)
                 if (srcClassName.includes('wp-block-columns') ) {
                     return (<div className='row'>{inner}</div>)
                 } else if (srcClassName.includes('wp-block-column')) {
@@ -118,22 +117,29 @@ const PreProcess = (code: string): string => {
 };
 
 type StateType = {
+    pageHasFeaturedImage: 'unknown' | 'no' | 'yes'
     heroImageSVG: any | null
     heroImageSharp: any | null
     loadingMessage: string
 }
 
-class Post extends React.Component<PropType, StateType> {
+class Page extends React.Component<PropType, StateType> {
 
     constructor(props: PropType) {
         super(props);
         this.state = { 
+            pageHasFeaturedImage: 'unknown',
             heroImageSVG: null, 
             heroImageSharp: null,
             loadingMessage: "Loading..." };
     }
 
     componentDidMount(): void {
+        if (this.props.data.wpPage.featuredImage === null) {
+            this.setState({ pageHasFeaturedImage: 'no' })
+            console.log(`Page id: ${this.props.data.wpPage.id} - ${this.props.data.wpPage.slug} has no feature image!`);
+            return;
+        }
         const media = this.props.data.wpPage.featuredImage.node;
         const imgUrl = media.localFile.publicURL;
         if (!imgUrl.startsWith('/static/')) {
@@ -155,30 +161,37 @@ class Post extends React.Component<PropType, StateType> {
                 /* webpackInclude: /\.svg$/ */
                 '../../public/static/' + staticPath
             ).then(({ default: PageHeroImage }) => {
-                this.setState({ heroImageSVG: PageHeroImage, loadingMessage: "Done" });
+                this.setState({ pageHasFeaturedImage: 'yes', heroImageSVG: PageHeroImage, loadingMessage: "Done" });
             }, (reason: any) => {
-                this.setState({ heroImageSVG: null, loadingMessage: `Failed: ${reason}` })
+                this.setState({ pageHasFeaturedImage: 'no', heroImageSVG: null, loadingMessage: `Failed: ${reason}` })
             });
         } else {
-            this.setState({ heroImageSharp: media.localFile.childImageSharp })
+            this.setState({ pageHasFeaturedImage: 'yes', heroImageSharp: media.localFile.childImageSharp })
         }
     }
+
     render(): ReactNode {
         let heroImage = <p>{this.state.loadingMessage}</p>;
-        if (this.state.heroImageSVG !== null) {
+        if (this.state.pageHasFeaturedImage !== 'no') {
+            if (this.state.heroImageSVG !== null) {
+                heroImage = (
+                    <div className={`container-fluid ${pageStyles.svgContainer}`}>
+                        <SVG
+                            preProcessor={PreProcess}
+                            src={this.state.heroImageSVG}
+                            title={this.props.data.wpPage.featuredImage.caption}
+                        ></SVG>
+                    </div>
+                );
+            } else if (this.state.heroImageSharp !== null) {
+                heroImage = (
+                    <Img fluid={this.state.heroImageSharp} title={this.props.data.wpPage.featuredImage.caption} />
+                );
+            }
+        } else {
             heroImage = (
-                <div className={`container-fluid ${pageStyles.svgContainer}`}>
-                    <SVG
-                        preProcessor={PreProcess}
-                        src={this.state.heroImageSVG}
-                        title={this.props.data.wpPage.featuredImage.caption}
-                    ></SVG>
-                </div>
-            );
-        } else if (this.state.heroImageSharp !== null) {
-            heroImage = (
-                <Img fluid={this.state.heroImageSharp} title={this.props.data.wpPage.featuredImage.caption} />
-            );
+                <hr />
+            )
         }
         return (
             <Layout>
@@ -190,4 +203,4 @@ class Post extends React.Component<PropType, StateType> {
     }
 }
 
-export default Post;
+export default Page;
