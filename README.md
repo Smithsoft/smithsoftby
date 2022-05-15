@@ -118,4 +118,4 @@ netlify deploy
 
 ### Admin of Wordpress Instance
 
-* See [Wordpress admin readme](wordpress-admin.md)
+* See [Wordpress admin readme](wordpress-admin.md)Please never add secrets to this repo
