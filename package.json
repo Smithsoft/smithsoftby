@@ -9,7 +9,7 @@
   ],
   "scripts": {
     "develop": "gatsby develop --port 8001",
-    "start": "gatsby develop",
+    "start": "gatsby develop --port 8001",
     "build": "gatsby build",
     "serve": "gatsby serve",
     "clean": "gatsby clean",

@@ -6,3 +6,6 @@ html/
 
 # Local Netlify folder
 .netlify/
+
+# Environment files with secrets
+.env
