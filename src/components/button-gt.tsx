@@ -1,6 +1,5 @@
 import React, { ReactNode } from 'react'
-import { Element } from 'domhandler/lib/node'
-import parse from 'style-to-object'
+import { Element, domToReact } from 'html-react-parser';
 
 /**
  * Button comes from Gutenberg with a block level element and a child link element:
@@ -34,8 +33,6 @@ type PropType = {
     gutenbergElement: Element
 }
 
-import { domToReact } from 'html-react-parser'
-
 class ButtonGt extends React.Component<PropType> {
 
     anchorRef = React.createRef<HTMLButtonElement>()
@@ -45,16 +42,11 @@ class ButtonGt extends React.Component<PropType> {
 
     targetLink = this.linkEl.attribs['href'] || this.linkEl.attribs['rel'] || '#'
     linkStyleText = this.linkEl.attribs['style']
-    linkStyle = parse(this.linkStyleText)
     blockClasses = this.blockEl.attribs['class'].split(/\s+/)
     linkClasses = this.linkEl.attribs['class'].split(/\s+/)
     buttonTreatment = this.blockClasses.includes('is-style-outline') ? 'outline-' : ''
     buttonTheme = this.blockClasses.includes('call-to-action') ? 'cta' : 'primary'
     buttonSize = this.blockClasses.includes('has-large-font-size') ? ' btn-lg' : ''
-
-    constructor(props: PropType) {
-        super(props)
-    }
     
     render(): ReactNode {
         this.buttonTreatment === 'outline' ? 'outline-' : ''

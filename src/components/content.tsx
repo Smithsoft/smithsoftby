@@ -1,26 +1,32 @@
-import React, { ReactNode } from 'react';
+import React, { Fragment, ReactNode } from 'react';
 
 import SVG from 'react-inlinesvg';
-import Img from 'gatsby-image';
-
-import parse, { DOMNode, domToReact, HTMLReactParserOptions } from 'html-react-parser';
-import { Element } from "domhandler/lib/node";
+import { GatsbyImage, GatsbyImageProps, getImage, IGatsbyImageData, StaticImage } from "gatsby-plugin-image"
+import parse, { DOMNode, domToReact, HTMLReactParserOptions, Element } from 'html-react-parser';
 import Layout from '../components/layout';
 import Head from '../components/head';
-
 import * as pageStyles from './content.module.scss';
 import ButtonGt from './button-gt';
 import ContentType from 'types/ContentType';
+import { DomElement } from 'domhandler';
 
 type ReplaceResult = JSX.Element | object | void | false
 
+function isElement(domNode: DOMNode): domNode is Element {
+    return ("name" in domNode && "type" in domNode && "attribs" in domNode && "children" in domNode);
+}
+
+// function isGatsbyImageData(domNode: DOMNode): domNode is IGatsbyImageData {
+//     const nodeAsImageData = domNode as IGatsbyImageData
+// }
+
 const transformer = (domNode: DOMNode): ReplaceResult => {
-    //console.log(JSON.stringify(domNode, ['name', 'attribs', 'type', 'children']))
-    if (domNode instanceof Element) {
-        if (domNode.type === 'tag') {
-            if (domNode.name === 'div') {
-                const inner = domToReact(domNode.children, { replace: transformer })
-                const srcClassName = domNode.attribs.class
+    console.log(">>>> entering transformer " + domNode.type)
+    if (isElement(domNode)) {
+        if (domNode.tagName === 'div') {
+            const inner = domToReact(domNode.children, { replace: transformer })
+            const srcClassName = domNode.attribs.class
+            if (srcClassName) {
                 if (srcClassName.includes('wp-block-columns') ) {
                     return (<div className='row'>{inner}</div>)
                 } else if (srcClassName.includes('wp-block-column')) {
@@ -34,6 +40,7 @@ const transformer = (domNode: DOMNode): ReplaceResult => {
             }
         }
     }
+    console.log("<<<< leaving transformer " + domNode.type)
 }
 
 const options: HTMLReactParserOptions = {
@@ -63,7 +70,7 @@ const PreProcess = (code: string): string => {
 type StateType = {
     pageHasFeaturedImage: 'unknown' | 'no' | 'yes'
     heroImageSVG: any | null
-    heroImageSharp: any | null
+    heroImageSharp?: IGatsbyImageData
     loadingMessage: string
 }
 
@@ -96,7 +103,7 @@ class Content<PropType> extends React.Component<PropType, StateType> {
         }
         const staticPath = imgUrl.replace(/^(\/static\/)/, '');
 
-        if (imgUrl.endsWith("SVG") || imgUrl.endsWith("svg")) {
+        if (imgUrl.toLocaleLowerCase().endsWith("svg")) {
             // webpack needs the dynamic version of import to specify that the path
             // is on the local relative part of the file system, and making the first
             // part of the path non-dynamic does this.
@@ -115,15 +122,23 @@ class Content<PropType> extends React.Component<PropType, StateType> {
                 this.setState({ pageHasFeaturedImage: 'no', heroImageSVG: null, loadingMessage: `Failed: ${reason}` })
             });
         } else {
-            this.setState({ pageHasFeaturedImage: 'yes', heroImageSharp: media.localFile.childImageSharp })
+            if (media.localFile.childImageSharp) {
+                const image = getImage(media.localFile.childImageSharp)
+                this.setState({ pageHasFeaturedImage: 'yes', heroImageSharp: image })
+            } else {
+                this.setState({ pageHasFeaturedImage: 'no', heroImageSharp:null, loadingMessage: 'Missing image' })
+            }
         }
     }
 
     render(): ReactNode {
         const fields = this.getContentFields()
         let heroImage = <p>{this.state.loadingMessage}</p>;
+        console.log("rendering")
         if (this.state.pageHasFeaturedImage !== 'no') {
-            if (this.state.heroImageSVG !== null) {
+            console.log("should have hero image")
+            if (this.state.heroImageSVG) {
+                console.log("SVG found")
                 heroImage = (
                     <div className={`container-fluid ${pageStyles.svgContainer}`}>
                         <SVG
@@ -133,16 +148,20 @@ class Content<PropType> extends React.Component<PropType, StateType> {
                         ></SVG>
                     </div>
                 );
-            } else if (this.state.heroImageSharp !== null) {
+            } else if (this.state.heroImageSharp) {
+                console.log("IMG found")
+                console.log(this.state.heroImageSharp)
                 heroImage = (
-                    <Img fluid={this.state.heroImageSharp} title={fields.featuredImage.caption} />
+                    <GatsbyImage image={this.state.heroImageSharp} title={fields.featuredImage.caption} alt={''} />
                 );
             }
+            console.log("hero image done")
         } else {
             heroImage = (
                 <hr />
             )
         }
+        console.log("Rendering...")
         return (
             <Layout>
                 <Head title={fields.title} />

@@ -119,3 +119,23 @@ netlify deploy
 ### Admin of Wordpress Instance
 
 * See [Wordpress admin readme](wordpress-admin.md)Please never add secrets to this repo
+
+# Updating
+
+```
+# Force all versions in `package.json` to be updated to latest
+npx npm-check-updates -u
+
+# Remove all caches and local state
+rm -Rf node_modules
+rm package-lock.json
+npm cache clean -f 
+
+# Re-install 
+npm install --legacy-peer-deps
+```
+
+Done!
+
+Note that Gatsby has `npm audit` [broken by design](https://github.com/gatsbyjs/gatsby/discussions/28852#discussioncomment-1898696): so don't worry about security warnings, even scary severe ones.
+

@@ -15,9 +15,7 @@ query($id: String) {
                 localFile {
                     publicURL
                     childImageSharp {
-                        fluid(maxWidth: 800) {
-                          ...GatsbyImageSharpFluid
-                        }
+                        gatsbyImageData(width: 300, placeholder: BLURRED, layout: FULL_WIDTH)
                     }
                 }
             }

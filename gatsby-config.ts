@@ -17,6 +17,9 @@ module.exports = {
                     requestConcurrency: 5, // currently set to 15
                     previewRequestConcurrency: 2, // currently set to 5
                 },
+                html: {
+                    useGatsbyImage: false,
+                },
             },
         },
         'gatsby-plugin-sass',
@@ -28,7 +31,12 @@ module.exports = {
         },
         'gatsby-plugin-sharp',
         'gatsby-plugin-react-helmet',
-        'gatsby-transformer-sharp',
+        {
+            resolve: 'gatsby-transformer-sharp',
+            options: {
+                checkSupportedExtensions: false,
+            }
+        },
         {
             resolve: 'gatsby-source-filesystem',
             options: {

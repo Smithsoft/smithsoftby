@@ -15,8 +15,8 @@
           "name": "typescript-styled-plugin"
         }
       ],
-      "target": "ES2018"
+      "target": "esnext"
     },
-    "include": ["src/**/*.ts", "src/**/*.tsx", "src/utils/algolia-queries.js"],
+    "include": ["src/**/*.ts", "src/**/*.tsx", "src/utils/algolia-queries.ts"],
     "exclude": ["node_modules/*", "public/*"]
   }
