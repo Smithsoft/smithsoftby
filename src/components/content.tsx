@@ -1,14 +1,13 @@
-import React, { Fragment, ReactNode } from 'react';
+import React, { ReactNode } from 'react';
 
 import SVG from 'react-inlinesvg';
-import { GatsbyImage, GatsbyImageProps, getImage, IGatsbyImageData, StaticImage } from "gatsby-plugin-image"
+import { GatsbyImage, getImage, IGatsbyImageData } from "gatsby-plugin-image"
 import parse, { DOMNode, domToReact, HTMLReactParserOptions, Element } from 'html-react-parser';
 import Layout from '../components/layout';
 import Head from '../components/head';
 import * as pageStyles from './content.module.scss';
 import ButtonGt from './button-gt';
 import ContentType from 'types/ContentType';
-import { DomElement } from 'domhandler';
 
 type ReplaceResult = JSX.Element | object | void | false
 
@@ -21,7 +20,6 @@ function isElement(domNode: DOMNode): domNode is Element {
 // }
 
 const transformer = (domNode: DOMNode): ReplaceResult => {
-    console.log(">>>> entering transformer " + domNode.type)
     if (isElement(domNode)) {
         if (domNode.tagName === 'div') {
             const inner = domToReact(domNode.children, { replace: transformer })
@@ -40,7 +38,6 @@ const transformer = (domNode: DOMNode): ReplaceResult => {
             }
         }
     }
-    console.log("<<<< leaving transformer " + domNode.type)
 }
 
 const options: HTMLReactParserOptions = {
@@ -134,11 +131,8 @@ class Content<PropType> extends React.Component<PropType, StateType> {
     render(): ReactNode {
         const fields = this.getContentFields()
         let heroImage = <p>{this.state.loadingMessage}</p>;
-        console.log("rendering")
         if (this.state.pageHasFeaturedImage !== 'no') {
-            console.log("should have hero image")
             if (this.state.heroImageSVG) {
-                console.log("SVG found")
                 heroImage = (
                     <div className={`container-fluid ${pageStyles.svgContainer}`}>
                         <SVG
@@ -149,19 +143,15 @@ class Content<PropType> extends React.Component<PropType, StateType> {
                     </div>
                 );
             } else if (this.state.heroImageSharp) {
-                console.log("IMG found")
-                console.log(this.state.heroImageSharp)
                 heroImage = (
                     <GatsbyImage image={this.state.heroImageSharp} title={fields.featuredImage.caption} alt={''} />
                 );
             }
-            console.log("hero image done")
         } else {
             heroImage = (
                 <hr />
             )
         }
-        console.log("Rendering...")
         return (
             <Layout>
                 <Head title={fields.title} />

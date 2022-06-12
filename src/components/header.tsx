@@ -4,6 +4,7 @@ import React from 'react';
 import { Link, graphql, StaticQuery } from 'gatsby';
 
 import * as headerStyles from './header.module.scss';
+import Search from './search';
 
 type MenuId = {
     id: string
@@ -41,6 +42,8 @@ type PropType = {
     }
 }
 
+const searchIndices = [{ name: `Pages`, title: `Pages` }]
+
 const generateLinks = (data: MenuItem[]): React.ReactElement[] => {
     const result = data.map((menuItem):React.ReactElement => {
         return (
@@ -67,12 +70,7 @@ const Header = (props: PropType): React.ReactElement => {
                 {links}
             </div>
             <div>
-            <form className="form-inline">
-                <div className="input-group">
-                    <input className="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search"></input>
-                    <button className="btn btn-outline-success my-2 my-sm-0" type="submit">Search</button>
-                </div>
-            </form>
+            <Search indices={searchIndices} />
             <span className={headerStyles.siteTitle}><small>{siteHeader.description}</small></span>
             </div>
         </nav>
