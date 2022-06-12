@@ -6,7 +6,22 @@ A Gatsby transform from WordPress React-app.
 
 [![Netlify Status](https://api.netlify.com/api/v1/badges/199337a3-0930-4b9f-8d67-043d33643661/deploy-status)](https://app.netlify.com/sites/vigilant-euler-79203e/deploys)
 
+# Stack
+
+* Docker compose Wordpress, MySQL and PhpMyAdmin
+* Gatsby WordPress plugins to stream GraphQL
+* React to render ingested GraphQL and assets
+* Gatsby to SSR and compose into HTML PRPL pages
+* Algolia search (free tier)
+* Netlify (free tier) to deploy to CDN hosted pages
+
+This is a big work-in-progress and much is broken.  Its mostly done as a learning exercise, but still the pages do render and are readable mostly at [my old Smithsoft site](https://smithsoft.au).
+
+This setup is completely $Free as it stands. 
+
 ### Google Free Tier
+
+If was collaborating with others on the content I could push the wordpress stack up to a Google instance.  I did work that way for a while, but it makes no sense if I'm the only one editing, as it costs some (small change) money to keep running. And collaboration is only possible with static IP.
 
 * Compute Engine: 1 x `e2-micro` in
 * `us-west1`, `us-central1` or `us-east1`
@@ -110,11 +125,14 @@ Log in to Netlify:
 netlify login
 ```
 
-Deploy to Netlify:
+Build & Deploy to Netlify:
 
 ```
-netlify deploy
+gatsby build
+netlify deploy --prod --dir public
 ```
+
+Note that gatsby build causes update of Algolia
 
 ### Admin of Wordpress Instance
 
