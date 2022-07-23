@@ -92,3 +92,19 @@ exports.createPages = async ({ graphql, actions }) => {
         }
     });
 };
+
+exports.onCreateWebpackConfig = ({ stage, rules, loaders, plugins, actions, getConfig }) => {
+    console.log('on create webpack config: ' + stage);
+    if (stage === 'build-javascript') {
+        console.log('building javascript');
+        const config = getConfig();
+        const miniCssExtractPlugin = config.plugins.find(
+            (plugin) => plugin.constructor.name === 'MiniCssExtractPlugin',
+        );
+        if (miniCssExtractPlugin) {
+            console.log('###### Got plugin');
+            miniCssExtractPlugin.options.ignoreOrder = true;
+        }
+        actions.replaceWebpackConfig(config);
+    }
+};
