@@ -1,110 +1,177 @@
-const path = require(`path`);
-const { slash } = require(`gatsby-core-utils`);
+/**
+ * Implement Gatsby's Node APIs in this file.
+ *
+ * See: https://www.gatsbyjs.com/docs/reference/config-files/gatsby-node/
+ */
+import { GatsbyNode } from "gatsby";
+import path from "node:path";
 
-// https://swas.io/blog/using-multiple-queries-on-gatsbyjs-createpages-node-api/
-exports.createPages = async ({ graphql, actions }) => {
-    const { createPage } = actions;
+const { createFilePath } = require(`gatsby-source-filesystem`)
 
-    // query content for WordPress posts
-    const result = await graphql(`
-        query {
-            frontPage: wpPage(isFrontPage: {eq: true}) {
-                title
-                slug
-                id
-            }
-            postsPage: wpPage(isPostsPage: {eq: true}) {
-                title
-                slug
-                id
-            }
-            otherPages: allWpPage(filter: {status: {eq: "publish"}}) {
-                edges {
-                    node {
-                        id
-                        slug
-                        content
-                        title
-                    }
-                }
-            }
-            allPosts: allWpPost(filter: {status: {eq: "publish"}}) {
-                edges {
-                    node {
-                        id
-                        date(formatString: "YYYY/MM/DD")
-                        slug
-                        content
-                        title
-                    }
-                }
-            }
+// Define the template for blog post
+const blogPost = path.resolve(`./src/templates/post.tsx`)
+
+// Define the template for site pages
+const sitePage = path.resolve(`./src/templates/page.tsx`)
+
+type NodeQueryResult = {
+    node: {
+        fields: {
+            slug: string
         }
-    `);
-
-    const postTemplate = path.resolve(`./src/templates/post.tsx`);
-    const pageTemplate = path.resolve(`./src/templates/page.tsx`);
-    const blogTemplate = path.resolve(`./src/templates/blog.tsx`);
-
-    const allPosts = result.data.allPosts.edges;
-    const otherPagesList = result.data.otherPages.edges;
-
-    createPage({
-        path: '/',
-        component: slash(pageTemplate),
-        context: {
-            id: result.data.frontPage.id
-        }
-    });
-    createPage({
-        path: '/blog',
-        component: slash(pageTemplate),
-        context: {
-            id: result.data.frontPage.id
-        }
-    });
-    allPosts.forEach((post) => {
-        console.log("Post create: " + post.node.id + " - " + post.node.slug)
-        createPage({
-            // will be the url for the page
-            path: `${post.node.date}/${post.node.slug}`,
-            // specify the component template of your choice
-            component: slash(postTemplate),
-            // In the ^template's GraphQL query, 'id' will be available
-            // as a GraphQL variable to query for this post's data.
-            context: {
-                id: post.node.id,
-            },
-        });
-    });
-    otherPagesList.forEach((page) => {
-        if (page.node.title && page.node.content) {
-            console.log("Page create: " + page.node.id + " - " + page.node.slug)
-            createPage({
-                path: page.node.slug,
-                component: slash(pageTemplate),
-                context: {
-                    id: page.node.id
-                }
-            });
-        } else {
-            console.log("Not creating a page " + page.node.id + ": empty title/content")
-        }
-    });
-};
-
-exports.onCreateWebpackConfig = ({ stage, rules, loaders, plugins, actions, getConfig }) => {
-    console.log('on create webpack config: ' + stage);
-    if (stage === 'build-javascript') {
-        console.log('building javascript');
-        const config = getConfig();
-        const miniCssExtractPlugin = config.plugins.find(
-            (plugin) => plugin.constructor.name === 'MiniCssExtractPlugin',
-        );
-        if (miniCssExtractPlugin) {
-            console.log('###### Got plugin');
-            miniCssExtractPlugin.options.ignoreOrder = true;
-        }
-        actions.replaceWebpackConfig(config);
+        id: string
     }
-};
+}
+
+type NodesListing = {
+    edges: Array<NodeQueryResult>
+}
+
+type CreatePagesResult = {
+    pages: NodesListing
+    posts: NodesListing,
+}
+
+/**
+ * @type {import('gatsby').GatsbyNode['createPages']}
+ */
+export const createPages: GatsbyNode["createPages"] = async ({ graphql, actions, reporter }) => {
+    const { createPage } = actions
+
+    // Get all markdown blog posts sorted by date
+    const result = await graphql<CreatePagesResult>(`
+    {
+        pages: allMarkdownRemark(filter: {fileAbsolutePath: {regex: "/content/pages/"}}) {
+            edges {
+                node {
+                    fields {
+                        slug
+                    }
+                    id
+                }
+            }
+        },
+        posts: allMarkdownRemark(filter: {fileAbsolutePath: {regex: "/content/blog/"}}) {
+            edges {
+                node {
+                    fields {
+                        slug
+                    }
+                    id
+                }
+            }
+        },
+    }`)
+
+    const posts = result.data?.posts.edges;
+    const pages = result.data?.pages.edges;
+
+    if (result.errors || posts === undefined) {
+        reporter.panicOnBuild(
+            `There was an error loading your blog posts`,
+            result.errors
+        )
+        return
+    }
+
+    // Create blog posts pages
+    // But only if there's at least one markdown file found at "content/blog" (defined in gatsby-config.ts)
+    // `context` is available in the template as a prop and as a variable in GraphQL
+
+    if (posts.length > 0) {
+        posts.forEach((post, index) => {
+            const previousPostId = index === 0 ? null : posts[index - 1].node.id
+            const nextPostId = index === posts.length - 1 ? null : posts[index + 1].node.id
+
+            createPage({
+                path: post.node.fields.slug,
+                component: blogPost,
+                context: {
+                    id: post.node.id,
+                    previousPostId,
+                    nextPostId,
+                },
+            })
+        })
+    }
+
+    if (pages === undefined) {
+        reporter.panicOnBuild(
+            'There was an error loading site pages',
+            result.errors
+        )
+        return
+    }
+
+    if (pages.length) {
+        pages.forEach((page, index) => {
+            createPage({
+                path: page.node.fields.slug,
+                component: sitePage,
+                context: { id: page.node.id }
+            })
+        })
+    }
+}
+
+/**
+ * @type {import('gatsby').GatsbyNode['onCreateNode']}
+ */
+export const onCreateNode: GatsbyNode['onCreateNode'] = ({ node, actions, getNode }) => {
+    const { createNodeField } = actions
+
+    if (node.internal.type === `MarkdownRemark`) {    
+        const value = createFilePath({ node, getNode })
+
+        createNodeField({
+            name: `slug`,
+            node,
+            value,
+        })
+    }
+}
+
+/**
+ * @type {import('gatsby').GatsbyNode['createSchemaCustomization']}
+ */
+export const createSchemaCustomization: GatsbyNode['createSchemaCustomization'] = ({ actions }) => {
+    const { createTypes } = actions
+
+    // Explicitly define the siteMetadata {} object
+    // This way those will always be defined even if removed from gatsby-config.ts
+
+    // Also explicitly define the Markdown frontmatter
+    // This way the "MarkdownRemark" queries will return `null` even when no
+    // blog posts are stored inside "content/blog" instead of returning an error
+    createTypes(`
+    type SiteSiteMetadata {
+      author: Author
+      siteUrl: String
+      social: Social
+    }
+
+    type Author {
+      name: String
+      summary: String
+    }
+
+    type Social {
+      twitter: String
+    }
+
+    type MarkdownRemark implements Node {
+      frontmatter: Frontmatter
+      fields: Fields
+    }
+
+    type Frontmatter {
+      title: String
+      description: String
+      date: Date @dateformat
+    }
+
+    type Fields {
+      slug: String
+    }
+  `)
+}

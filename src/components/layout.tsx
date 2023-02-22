@@ -1,47 +1,38 @@
-import React from 'react';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import Footer from './footer';
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-import MenuHeader from './header';
+import * as React from "react"
+import { Link } from "gatsby"
+import { Menu } from "../models/Menu"
+import { MenuDisplay } from "./MenuDisplay"
 
-import '../styles/index.scss';
+type LayoutProps = {
+  location: Location
+  title: string
+  menu?: Menu
+  children: React.ReactNode
+}
 
-/**
- * Layout is the top level element in all pages.
- * 
- *   Semantic element layout to work w assistice technologies
- * <header>
- *      <h1>Site name</h1><!-- brand here -->
- *      <nav></nav>
- * </header>
- * <main>
- *      <div>
- *          <img>Hero image</img>
- *      </div>
- *      <section>
- *      </section>
- *      <section>
- *      </section>
- * </main>
- * <footer></footer>
- * 
-        https://www.w3schools.com/html/html5_semantic_elements.asp
+const Layout: React.FC<LayoutProps> = ({ location, title, menu, children }) => {
+  const rootPath = `${__PATH_PREFIX__}/`
+  const isRootPath = location.pathname === rootPath
+  const header = (
+    <h1 className="main-heading">
+      <Link to="/">{title}</Link>
+    </h1>
+  )
 
-        https://developer.mozilla.org/en-us/docs/Web/HTML/Element/main
- *  
- * */ 
-const Layout = (props: { children: React.ReactNode }): React.ReactElement => {
-    return (
-        <div className='container'>
-            <header>
-                <MenuHeader />
-            </header>
-            <main>
-                {props.children}
-            </main>
-            <Footer />
-        </div>
-    );
-};
+  return (
+    <div className="global-wrapper" data-is-root-path={isRootPath}>
+      <header className="global-header">
+        {header}
+        {menu && <MenuDisplay menuLinks={menu.menuLinks}></MenuDisplay>}
+      </header>
+      <main>{children}</main>
+      <footer>
+        © {new Date().getFullYear()}, Built with
+        {` `}
+        <a href="https://www.gatsbyjs.com">Gatsby</a>
+      </footer>
+    </div>
+  )
+}
 
-export default Layout;
+export default Layout

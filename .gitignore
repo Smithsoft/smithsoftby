@@ -1,11 +1,2 @@
-node_modules/
-.cache/
-.vscode/
-public/
-html/
-
-# Local Netlify folder
-.netlify/
-
-# Environment files with secrets
-.env
+content/blog/*
+content/pages/*
