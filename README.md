@@ -6,6 +6,10 @@ This is based on the [Gatsby blog starter](https://www.gatsbyjs.com/starters/gat
 
 * [Converted to Typescript](https://www.gatsbyjs.com/docs/how-to/custom-configuration/typescript/#migrating-to-typescript)
 
+## Pre-requisites
+
+[NodeJS / NPM](https://nodejs.org/en/download)
+
 ## Building
 
 ```
